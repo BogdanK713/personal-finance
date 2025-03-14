@@ -31,4 +31,4 @@ All microservices communicate using **REST APIs**.
 ## 🚀 Getting Started
 
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/personal-finance-tracker.git
+git clone https://github.com/BogdanK713/personal-finance-tracker.git
