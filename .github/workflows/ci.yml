@@ -19,4 +19,5 @@ jobs:
           pip install -r user-service/requirements.txt
 
       - name: Run Tests
-        run: pytest user-service
+        run: pytest user-service/tests.py
+
