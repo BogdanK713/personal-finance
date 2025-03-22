@@ -5,6 +5,21 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: userdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -15,9 +30,12 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
+        run: pip install -r user-service/requirements.txt
+
+      - name: Wait for MySQL to be ready
         run: |
-          pip install -r user-service/requirements.txt
+          echo "Waiting for MySQL..."
+          sleep 20
 
       - name: Run Tests
         run: pytest user-service/tests.py
-
