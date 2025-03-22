@@ -3,3 +3,4 @@ grpcio-tools
 sqlalchemy
 pymysql
 pytest
+cryptography
