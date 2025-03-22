@@ -19,5 +19,14 @@ services:
     environment:
       DATABASE_URL: "mysql+pymysql://root:root@db:3306/userdb"
 
+  transaction-service:
+    build: ./transaction_service
+    depends_on:
+      - db
+    ports:
+      - "50051:50051"  # gRPC default
+    environment:
+      DATABASE_URL: "mysql+pymysql://root:root@db:3306/transactiondb"
+
 volumes:
   dbdata:

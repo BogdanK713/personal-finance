@@ -13,7 +13,7 @@ The **Transaction Service** allows users to **track their income and expenses** 
 
 ## 🏗️ Tech Stack
 ✔ **Backend:** Flask (Python)  
-✔ **Database:** PostgreSQL  
+✔ **Database:** MySQL  
 ✔ **Security:** JWT Authentication 
 
 ## 📊 Transaction Categories

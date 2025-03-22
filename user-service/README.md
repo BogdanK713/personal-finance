@@ -16,7 +16,7 @@ It ensures **secure login, JWT authentication, and user profile updates**.
 
 ## 🏗️ Tech Stack
 ✔ **Backend:** FastAPI (Python)  
-✔ **Database:** PostgreSQL  
+✔ **Database:** MySQL  
 ✔ **Security:** JWT Authentication, bcrypt  
 ✔ **Communication:** REST API  
 
