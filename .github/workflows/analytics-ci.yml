@@ -22,10 +22,11 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-          
+
     env:
       AMQP_URI: amqp://guest:guest@rabbitmq/
       MONGO_URI: mongodb://mongo:27017
+      PYTHONPATH: analytics-service
 
     steps:
       - name: Checkout code
@@ -44,16 +45,14 @@ jobs:
 
       - name: Start analytics-service in background
         run: |
-          PYTHONPATH=analytics-service nohup python analytics-service/app/main.py > analytics-service.log 2>&1 &
+          nohup python analytics-service/app/main.py > analytics-service.log 2>&1 &
           sleep 5
 
       - name: Run Analytics Endpoint Tests
-        run: |
-          PYTHONPATH=analytics-service pytest analytics-service/tests/test_analytics.py
+        run: pytest analytics-service/tests/test_analytics.py
 
       - name: Run RabbitMQ Integration Test
-        run: |
-          PYTHONPATH=analytics-service pytest analytics-service/tests/test_consumer.py
+        run: pytest analytics-service/tests/test_consumer.py
 
       - name: Show analytics-service logs
         if: always()
