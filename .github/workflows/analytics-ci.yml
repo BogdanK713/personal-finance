@@ -7,6 +7,16 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
+      mongo:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.stats()'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       rabbitmq:
         image: rabbitmq:3-management
         ports:
@@ -19,8 +29,8 @@ jobs:
           --health-retries 5
 
     env:
-      AMQP_URI: amqp://guest:guest@rabbitmq/
-      MONGO_URI: ${{ secrets.REAL_MONGO_URI }}
+      MONGO_URI: mongodb://localhost:27017
+      AMQP_URI: amqp://guest:guest@localhost/
       PYTHONPATH: analytics-service
 
     steps:
@@ -35,20 +45,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r analytics-service/requirements.txt
 
-      - name: Wait for RabbitMQ
-        run: sleep 15
+      - name: Wait for services
+        run: sleep 20
 
-      - name: Start analytics-service in background
+      - name: Start analytics service in background
         run: |
           nohup python analytics-service/app/main.py > analytics-service.log 2>&1 &
           sleep 5
 
-      - name: Run Analytics Endpoint Tests
+      - name: Run endpoint tests
         run: pytest analytics-service/tests/test_analytics.py
 
-      - name: Run RabbitMQ Integration Test
+      - name: Run RabbitMQ consumer test
         run: pytest analytics-service/tests/test_consumer.py
 
-      - name: Show analytics-service logs
+      - name: Print analytics-service logs
         if: always()
         run: cat analytics-service.log
