@@ -3,6 +3,7 @@ import json
 import pytest
 from motor.motor_asyncio import AsyncIOMotorClient
 import aio_pika
+import time
 
 MONGO_URI = "mongodb://localhost:27017"
 RABBITMQ_URI = "amqp://guest:guest@localhost/"
@@ -29,13 +30,15 @@ async def test_rabbitmq_to_mongodb():
         routing_key=QUEUE_NAME
     )
 
-    # Allow time for consumer to process
-    await asyncio.sleep(2)
-
-    # Check MongoDB
+    # Poll MongoDB with retries for up to 10 seconds
     client = AsyncIOMotorClient(MONGO_URI)
     db = client.analytics_db
-    result = await db.transactions.find_one({"user_id": "testuser_integration"})
 
-    assert result is not None
+    for _ in range(20):  # retry every 0.5s for up to 10s
+        result = await db.transactions.find_one({"user_id": "testuser_integration"})
+        if result:
+            break
+        await asyncio.sleep(0.5)
+
+    assert result is not None, "Message was not found in MongoDB after 10 seconds"
     assert result["amount"] == 99.99

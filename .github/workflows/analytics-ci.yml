@@ -35,8 +35,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r analytics-service/requirements.txt
 
-      - name: Wait for MongoDB and RabbitMQ
-        run: sleep 15
+      - name: Start analytics service (background)
+        run: |
+          nohup python analytics-service/app/main.py > analytics.log 2>&1 &
+          sleep 10  # Wait for service & consumer to be ready
 
       - name: Run Analytics Endpoint Tests
         run: |
@@ -45,3 +47,7 @@ jobs:
       - name: Run RabbitMQ Integration Test
         run: |
           PYTHONPATH=analytics-service pytest analytics-service/tests/test_consumer.py
+
+      - name: Print Analytics Logs (for debugging)
+        if: always()
+        run: cat analytics.log
