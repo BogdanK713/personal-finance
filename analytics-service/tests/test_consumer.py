@@ -1,5 +1,6 @@
 import asyncio
 import json
+import contextlib
 import pytest
 import aio_pika
 from motor.motor_asyncio import AsyncIOMotorClient
