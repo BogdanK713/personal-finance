@@ -1,8 +1,9 @@
 import asyncio
 import json
 import pytest
-from motor.motor_asyncio import AsyncIOMotorClient
 import aio_pika
+from motor.motor_asyncio import AsyncIOMotorClient
+from app.consumer import consume
 
 MONGO_URI = "mongodb://localhost:27017"
 RABBITMQ_URI = "amqp://guest:guest@localhost/"
@@ -10,11 +11,14 @@ QUEUE_NAME = "transactions"
 
 @pytest.mark.asyncio
 async def test_rabbitmq_to_mongodb():
-    # Connect to RabbitMQ
+    # Start the consumer as a background task
+    consumer_task = asyncio.create_task(consume())
+    await asyncio.sleep(2)  # Let the consumer connect and start listening
+
+    # Connect to RabbitMQ and send test message
     connection = await aio_pika.connect_robust(RABBITMQ_URI)
     channel = await connection.channel()
 
-    # Create test message
     test_message = {
         "user_id": "testuser_integration",
         "category": "Test",
@@ -28,17 +32,23 @@ async def test_rabbitmq_to_mongodb():
         routing_key=QUEUE_NAME
     )
 
-    # Retry MongoDB check
+    # Check MongoDB for the inserted document
     client = AsyncIOMotorClient(MONGO_URI)
     db = client.analytics_db
 
     result = None
-    for i in range(30):  # Retry up to 15s
+    for _ in range(30):  # Retry for up to 15s
         result = await db.transactions.find_one({"user_id": "testuser_integration"})
         if result:
             break
         await asyncio.sleep(0.5)
 
+    # Cleanup
+    await connection.close()
     client.close()
+    consumer_task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await consumer_task
+
     assert result is not None, "Message was not found in MongoDB after 15 seconds"
     assert result["amount"] == 99.99
