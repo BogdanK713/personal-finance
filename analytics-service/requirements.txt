@@ -4,3 +4,4 @@ aio-pika
 pytest
 pytest-asyncio
 aiohttp-swagger
+pytest-aiohttp
