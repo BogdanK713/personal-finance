@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from aiohttp import web
-from aiohttp_swagger import setup_swagger
+#from aiohttp_swagger import setup_swagger
 
 from app.analytics import get_summary, get_monthly, get_budget
 from app.consumer import consume
@@ -18,7 +18,7 @@ def create_app():
     ])
 
     # Setup Swagger UI from file
-    setup_swagger(app, swagger_from_file="swagger.yaml")
+   # setup_swagger(app, swagger_from_file="swagger.yaml")
 
     return app
 
@@ -30,7 +30,7 @@ async def start_services():
     site = web.TCPSite(runner, '0.0.0.0', 8002)
     await site.start()
     logger.info("🌐 Analytics service running at http://0.0.0.0:8002")
-    logger.info("📄 Swagger docs at http://0.0.0.0:8002/api/doc")
+    #logger.info("📄 Swagger docs at http://0.0.0.0:8002/api/doc")
 
     await consume()  # keep this running
 
