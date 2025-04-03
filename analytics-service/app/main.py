@@ -1,8 +1,6 @@
 import asyncio
 import logging
 from aiohttp import web
-#from aiohttp_swagger import setup_swagger
-
 from app.analytics import get_summary, get_monthly, get_budget
 from app.consumer import consume
 
@@ -16,26 +14,26 @@ def create_app():
         web.get('/analytics/monthly', get_monthly),
         web.get('/analytics/budget', get_budget),
     ])
-
-    # Setup Swagger UI from file
-   # setup_swagger(app, swagger_from_file="swagger.yaml")
-
     return app
 
 async def start_services():
     app = create_app()
     runner = web.AppRunner(app)
     await runner.setup()
-
     site = web.TCPSite(runner, '0.0.0.0', 8002)
     await site.start()
-    logger.info("🌐 Analytics service running at http://0.0.0.0:8002")
-    #logger.info("📄 Swagger docs at http://0.0.0.0:8002/api/doc")
 
-    await consume()  # keep this running
+    logger.info("🌐 Analytics service running at http://0.0.0.0:8002")
+
+    # ✅ Start consumer as a background task
+    asyncio.create_task(consume())
+
+    # 🔁 Keep app running
+    while True:
+        await asyncio.sleep(3600)
 
 if __name__ == "__main__":
     try:
         asyncio.run(start_services())
-    except Exception as e:
+    except Exception:
         logger.error("❌ Error starting analytics service", exc_info=True)
