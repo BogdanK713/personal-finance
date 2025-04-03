@@ -1,16 +1,21 @@
 import pytest
 from aiohttp import web
-from app.analytics import get_summary, get_monthly, get_budget
+from app.main import create_app  # prilagodi pot, če je drugačna
+import asyncio
 
+# Fix za "RuntimeError: Event loop is closed" z motor/mongo
+@pytest.fixture(scope="session")
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+# Fixture za aiohttp aplikacijo
 @pytest.fixture
 def app():
-    app = web.Application()
-    app.add_routes([
-        web.get('/analytics/summary', get_summary),
-        web.get('/analytics/monthly', get_monthly),
-        web.get('/analytics/budget', get_budget),
-    ])
-    return app
+    return create_app()
+
+# --- TESTI ---
 
 async def test_get_summary(aiohttp_client, app):
     client = await aiohttp_client(app)
