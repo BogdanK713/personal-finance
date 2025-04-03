@@ -3,12 +3,14 @@ import json
 import logging
 import aio_pika
 from .db import get_collection
+import os
 
 logger = logging.getLogger(__name__)
 
 async def consume():
     logger.info("📡 Connecting to RabbitMQ...")
-    connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
+    connection = await aio_pika.connect_robust(os.getenv("AMQP_URI", "amqp://guest:guest@localhost/"))
+
     channel = await connection.channel()
     queue = await channel.declare_queue("transactions", durable=True)
 

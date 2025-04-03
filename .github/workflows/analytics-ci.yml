@@ -22,6 +22,10 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          
+    env:
+      AMQP_URI: amqp://guest:guest@rabbitmq/
+      MONGO_URI: mongodb://mongo:27017
 
     steps:
       - name: Checkout code
