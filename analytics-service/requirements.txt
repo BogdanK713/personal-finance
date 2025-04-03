@@ -1,0 +1,6 @@
+aiohttp
+motor
+aio-pika
+pytest
+pytest-asyncio
+aiohttp-swagger

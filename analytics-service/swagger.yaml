@@ -1,0 +1,29 @@
+openapi: "3.0.0"
+info:
+  title: Analytics Service API
+  version: "1.0"
+paths:
+  /analytics/summary:
+    get:
+      summary: Retrieve a spending summary
+      responses:
+        '200':
+          description: Summary response
+  /analytics/monthly:
+    get:
+      summary: Get monthly expense breakdown
+      responses:
+        '200':
+          description: Monthly breakdown
+  /analytics/budget:
+    get:
+      summary: Check budget compliance
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Budget check result

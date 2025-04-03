@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: mysql:8.0
@@ -9,6 +11,22 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
 
   user-service:
     build: ./user-service
@@ -24,9 +42,21 @@ services:
     depends_on:
       - db
     ports:
-      - "50051:50051"  # gRPC default
+      - "50051:50051"
     environment:
       DATABASE_URL: "mysql+pymysql://root:root@db:3306/transactiondb"
 
+  analytics-service:
+    build: ./analytics-service
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - "8002:8002"
+    environment:
+      MONGO_URI: "mongodb://mongo:27017"
+      AMQP_URI: "amqp://guest:guest@rabbitmq/"
+
 volumes:
   dbdata:
+  mongodata:
