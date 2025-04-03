@@ -45,7 +45,9 @@ jobs:
 
       - name: Start analytics-service in background
         run: |
-          nohup python analytics-service/app/main.py > analytics-service.log 2>&1 &
+          export MONGO_URI=$MONGO_URI
+          export AMQP_URI=$AMQP_URI
+          PYTHONPATH=analytics-service nohup python analytics-service/app/main.py > analytics-service.log 2>&1 &
           sleep 5
 
       - name: Run Analytics Endpoint Tests
