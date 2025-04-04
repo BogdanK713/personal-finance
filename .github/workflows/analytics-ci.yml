@@ -29,7 +29,7 @@ jobs:
           --health-retries 5
 
     env:
-      MONGO_URI: mongodb://localhost:27017
+      MONGO_URI: mongodb+srv://root:root@cluster0.hixql.mongodb.net/analytics?retryWrites=true&w=majority&appName=Cluster0
       AMQP_URI: amqp://guest:guest@localhost/
       PYTHONPATH: analytics-service
 

@@ -6,7 +6,7 @@ import aio_pika
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.consumer import consume
 
-MONGO_URI = "mongodb://localhost:27017"
+MONGO_URI = "mongodb+srv://root:root@cluster0.hixql.mongodb.net/analytics?retryWrites=true&w=majority&appName=Cluster0"  # Replace with your Atlas URI in CI
 RABBITMQ_URI = "amqp://guest:guest@localhost/"
 QUEUE_NAME = "transactions"
 
@@ -14,7 +14,7 @@ QUEUE_NAME = "transactions"
 async def test_rabbitmq_to_mongodb():
     # Start the consumer as a background task
     consumer_task = asyncio.create_task(consume())
-    await asyncio.sleep(2)  # Let the consumer connect and start listening
+    await asyncio.sleep(2)  # Give consumer time to connect
 
     # Connect to RabbitMQ and send test message
     connection = await aio_pika.connect_robust(RABBITMQ_URI)
@@ -53,3 +53,19 @@ async def test_rabbitmq_to_mongodb():
 
     assert result is not None, "Message was not found in MongoDB after 15 seconds"
     assert result["amount"] == 99.99
+
+
+@pytest.mark.asyncio
+async def test_verify_written_document():
+    client = AsyncIOMotorClient(MONGO_URI)
+    db = client.analytics_db
+
+    # Look for the document directly
+    result = await db.transactions.find_one({"user_id": "testuser_integration"})
+
+    assert result is not None, "No document with user_id=testuser_integration found in MongoDB"
+    assert result["category"] == "Test"
+    assert result["amount"] == 99.99
+    assert result["type"] == "Expense"
+
+    client.close()
