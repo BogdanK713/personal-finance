@@ -57,6 +57,24 @@ services:
       MONGO_URI: "mongodb://mongo:27017"
       AMQP_URI: "amqp://guest:guest@rabbitmq/"
 
+  api-gateway-web:
+    build: ./api-gateway-web
+    ports:
+      - "3000:3000"
+    environment:
+      USER_SERVICE_URL: "http://user-service:8000"
+      TRANSACTION_SERVICE_URL: "http://transaction-service:50051"
+      ANALYTICS_SERVICE_URL: "http://analytics-service:8002"
+
+  api-gateway-mobile:
+    build: ./api-gateway-mobile
+    ports:
+      - "5000:5000"
+    environment:
+      USER_SERVICE_URL: "http://user-service:8000"
+      TRANSACTION_SERVICE_URL: "http://transaction-service:50051"
+      ANALYTICS_SERVICE_URL: "http://analytics-service:8002"
+
 volumes:
   dbdata:
   mongodata:
