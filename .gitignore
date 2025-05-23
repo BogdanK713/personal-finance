@@ -57,3 +57,6 @@ junit-*.xml
 *.sql
 *.dump
 *.bak
+analytics-ci.yml
+user-ci.yml
+transaction-ci.yml
