@@ -6,10 +6,14 @@ from app.consumer import consume
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+async def health_check(request):
+    return web.json_response({"status": "ok"})
+
 # Create aiohttp app and routes
 def create_app():
     app = web.Application()
-
+    app.router.add_get("/health", health_check)
+    
     # Register analytics routes
     app.router.add_get('/analytics/summary', get_summary)
     app.router.add_get('/analytics/monthly', get_monthly)

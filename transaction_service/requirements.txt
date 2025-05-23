@@ -5,3 +5,5 @@ pymysql
 pytest
 cryptography
 pika
+Flask
+python-dotenv

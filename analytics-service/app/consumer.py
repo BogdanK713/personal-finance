@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import aio_pika
@@ -5,10 +6,11 @@ from app.db import get_collection
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+AMQP_URI = os.getenv("AMQP_URI", "amqp://guest:guest@rabbitmq/")
 
 async def consume():
     try:
-        connection = await aio_pika.connect_robust("amqp://guest:guest@rabbitmq/")
+        connection = await aio_pika.connect_robust(AMQP_URI)
         channel = await connection.channel()
         queue = await channel.declare_queue("transactions", durable=True)
 

@@ -1,9 +1,10 @@
+import os
 import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.exc import OperationalError
 
-DATABASE_URL = "mysql+pymysql://root:root@db:3306/transactiondb"
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:root@db:3306/transactiondb")
 
 # Retry loop
 for attempt in range(10):

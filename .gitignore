@@ -57,6 +57,6 @@ junit-*.xml
 *.sql
 *.dump
 *.bak
-analytics-ci.yml
-user-ci.yml
-transaction-ci.yml
+.github/workflows/analytics-ci.yml
+.github/workflows/user-ci.yml
+.github/workflows/transaction-ci.yml

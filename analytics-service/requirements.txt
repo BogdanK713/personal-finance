@@ -5,3 +5,4 @@ pytest
 pytest-asyncio
 aiohttp-swagger
 pytest-aiohttp
+python-dotenv

@@ -1,10 +1,11 @@
+import os
 import time
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 from app.models import Base  # ✅ Make sure this comes after Base is defined in models.py
 
-DATABASE_URL = "mysql+pymysql://root:root@db:3306/userdb"
+DATABASE_URL = os.getenv("DATABASE_URL","mysql+pymysql://root:root@db:3306/userdb")
 
 # Retry connection
 for attempt in range(10):
