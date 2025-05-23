@@ -1,7 +1,8 @@
 from concurrent import futures
 import grpc
-from transaction_service.app.proto import transaction_pb2_grpc as pb2_grpc
-from transaction_service.app.service import TransactionService
+from proto import transaction_pb2_grpc as pb2_grpc
+from service import TransactionService
+
 
 
 def serve():

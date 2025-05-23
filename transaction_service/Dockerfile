@@ -1,21 +1,25 @@
-# Dockerfile for Transaction Service
-
 FROM python:3.10-slim
 
-# Set working directory
+# Set the base working directory
 WORKDIR /app
 
-# Copy only requirements first to leverage Docker cache
-COPY requirements.txt .
+# Copy only the requirements file first (for better Docker caching)
+COPY ./requirements.txt .
 
 # Install dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Now copy the rest of the app
-COPY . .
+# Copy the application code
+COPY ./app ./app
 
-# Expose gRPC default port
+# Set working directory to the app code
+WORKDIR /app/app
+
+# Set PYTHONPATH so internal imports work properly
+ENV PYTHONPATH=/app/app
+
+# Expose gRPC port
 EXPOSE 50051
 
-# Start the gRPC server
-CMD ["python", "transaction_service/app/server.py"]
+# Run the service
+CMD ["python", "server.py"]

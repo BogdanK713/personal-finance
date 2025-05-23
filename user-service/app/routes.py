@@ -37,13 +37,20 @@ def create_access_token(data: dict):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+from sqlalchemy.exc import IntegrityError
+
 @router.post("/users/register")
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = User(username=user.username, email=user.email)
     db_user.set_password(user.password)
     db.add(db_user)
-    db.commit()
-    return {"message": "User created"}
+    try:
+        db.commit()
+        return {"message": "User created"}
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Email already exists")
+
 
 @router.post("/users/login")
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -51,7 +58,11 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
     if not user or not user.check_password(form_data.password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     access_token = create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+    "access_token": access_token,
+    "token_type": "bearer",
+    "user_id": user.id  # ✅ include this
+}
 
 @router.get("/users/profile")
 def get_profile(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -73,3 +84,8 @@ def delete_user(db: Session = Depends(get_db), token: str = Depends(oauth2_schem
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted"}
+
+@router.get("/users")
+def list_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return [{"username": user.username, "email": user.email} for user in users]

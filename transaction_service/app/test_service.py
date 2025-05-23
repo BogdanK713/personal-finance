@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import MagicMock
 
-from transaction_service.app.service import TransactionService
-from transaction_service.app.proto import transaction_pb2
-from transaction_service.app.models import Transaction
+from service import TransactionService
+from proto import transaction_pb2
+from models import Transaction
 
 
 @pytest.fixture
@@ -25,7 +25,6 @@ def test_add_transaction(service):
     )
     context = MagicMock()
     response = service.AddTransaction(request, context)
-
     assert response.message == "Transaction added"
 
 
@@ -43,18 +42,15 @@ def test_get_transactions(service):
     get_request = transaction_pb2.UserRequest(user_id="user2")
     response = service.GetTransactions(get_request, context)
 
-    # Match specific added transaction
     matches = [
         txn for txn in response.transactions
         if txn.amount == 50.0 and txn.category == "Transport"
     ]
-
     assert len(matches) >= 1
 
 
 def test_update_transaction(service):
     context = MagicMock()
-
     add_request = transaction_pb2.TransactionRequest(
         user_id="user3",
         amount=75.0,
@@ -73,7 +69,6 @@ def test_update_transaction(service):
         type="Expense"
     )
     response = service.UpdateTransaction(update_request, context)
-
     assert response.message == "Updated"
 
     updated = service.db.get(Transaction, transaction_id)
@@ -83,7 +78,6 @@ def test_update_transaction(service):
 
 def test_delete_transaction(service):
     context = MagicMock()
-
     add_request = transaction_pb2.TransactionRequest(
         user_id="user4",
         amount=30.0,
@@ -97,7 +91,6 @@ def test_delete_transaction(service):
 
     delete_request = transaction_pb2.DeleteRequest(id=transaction_id)
     delete_response = service.DeleteTransaction(delete_request, context)
-
     assert delete_response.message == "Deleted"
 
     deleted = service.db.get(Transaction, transaction_id)

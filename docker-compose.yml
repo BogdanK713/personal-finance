@@ -11,15 +11,26 @@ services:
       - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   mongo:
     image: mongo
@@ -31,16 +42,19 @@ services:
   user-service:
     build: ./user-service
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
       DATABASE_URL: "mysql+pymysql://root:root@db:3306/userdb"
 
   transaction-service:
-    build: ./transaction_service
+    build:
+      context: ./transaction_service
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "50051:50051"
     environment:
@@ -49,13 +63,16 @@ services:
   analytics-service:
     build: ./analytics-service
     depends_on:
-      - mongo
-      - rabbitmq
+      mongo:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     ports:
       - "8002:8002"
     environment:
       MONGO_URI: "mongodb://mongo:27017"
       AMQP_URI: "amqp://guest:guest@rabbitmq/"
+      TEST_MODE: "true"
 
   api-gateway-web:
     build: ./api-gateway-web
@@ -72,8 +89,28 @@ services:
       - "5000:5000"
     environment:
       USER_SERVICE_URL: "http://user-service:8000"
-      TRANSACTION_SERVICE_URL: "http://transaction-service:50051"
+      TRANSACTION_SERVICE_URL: "transaction-service:50051"
       ANALYTICS_SERVICE_URL: "http://analytics-service:8002"
+
+  user-mf:
+    build: ./user-mf
+    ports:
+      - "8081:8080"
+
+  transaction-mf:
+    build: ./transaction-mf
+    ports:
+      - "8082:8080"
+
+  analytics-mf:
+    build: ./analytics-mf
+    ports:
+      - "8083:8080"
+
+  web-app-container:
+    build: ./web-app-container
+    ports:
+      - "8080:8080"
 
 volumes:
   dbdata:

@@ -4,3 +4,4 @@ sqlalchemy
 pymysql
 pytest
 cryptography
+pika

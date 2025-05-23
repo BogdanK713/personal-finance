@@ -1,8 +1,11 @@
 import asyncio
+import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017")
+
 async def show_transactions():
-    client = AsyncIOMotorClient("mongodb+srv://root:root@cluster0.hixql.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = AsyncIOMotorClient(MONGO_URI)
     db = client["analytics_db"]
     docs = await db.transactions.find().to_list(length=100)
 

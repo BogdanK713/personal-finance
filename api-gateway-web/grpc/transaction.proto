@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package transaction;
+
+service TransactionService {
+  rpc AddTransaction (TransactionRequest) returns (TransactionResponse);
+  rpc GetTransactions (UserRequest) returns (TransactionList);
+  rpc UpdateTransaction (UpdateRequest) returns (TransactionResponse);
+  rpc DeleteTransaction (DeleteRequest) returns (TransactionResponse);
+}
+
+message TransactionRequest {
+  string user_id = 1;
+  string category = 2;
+  float amount = 3;
+  string type = 4; // "income" or "expense"
+  string date = 5;
+}
+
+message TransactionResponse {
+  string status = 1;
+  string message = 2;
+}
+
+message UpdateRequest {
+  int32 id = 1;
+  string category = 2;
+  float amount = 3;
+  string type = 4;
+}
+
+message DeleteRequest {
+  int32 id = 1;
+}
+
+message UserRequest {
+  string user_id = 1;
+}
+
+message Transaction {
+  int32 id = 1;
+  string category = 2;
+  float amount = 3;
+  string type = 4;
+  string date = 5;
+}
+
+message TransactionList {
+  repeated Transaction transactions = 1;
+}

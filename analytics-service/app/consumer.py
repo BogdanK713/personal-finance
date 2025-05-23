@@ -1,27 +1,37 @@
-import asyncio
 import json
 import logging
 import aio_pika
-from .db import get_collection
-import os
+from app.db import get_collection
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 async def consume():
-    logger.info("📡 Connecting to RabbitMQ...")
-    connection = await aio_pika.connect_robust(os.getenv("AMQP_URI", "amqp://guest:guest@localhost/"))
+    try:
+        connection = await aio_pika.connect_robust("amqp://guest:guest@rabbitmq/")
+        channel = await connection.channel()
+        queue = await channel.declare_queue("transactions", durable=True)
 
-    channel = await connection.channel()
-    queue = await channel.declare_queue("transactions", durable=True)
+        logger.info("✅ RabbitMQ consumer started and listening...")
 
-    logger.info("✅ RabbitMQ Consumer started")
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    try:
+                        payload = json.loads(message.body.decode())
+                        logger.info(f"📥 Received message from queue: {payload}")
 
-    async with queue.iterator() as q:
-        async for message in q:
-            async with message.process():
-                try:
-                    data = json.loads(message.body.decode())
-                    logger.info("📥 Received message: %s", data)
-                    await get_collection("transactions").insert_one(data)
-                except Exception as e:
-                    logger.error("❌ Error processing message", exc_info=True)
+                        # insert to MongoDB
+                        transactions = get_collection("transactions")
+                        result = await transactions.insert_one(payload)
+
+                        if result.inserted_id:
+                            logger.info(f"✅ Inserted into MongoDB with ID: {result.inserted_id}")
+                        else:
+                            logger.warning("⚠️ Inserted document returned no ID")
+
+                    except Exception as e:
+                        logger.error(f"❌ Failed to process message: {e}")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to start RabbitMQ consumer: {e}")

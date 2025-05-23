@@ -1,12 +1,9 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 
-# Use environment variable or fallback to localhost for dev
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-
-# This works for both local Mongo and GitHub Actions service container
-client = AsyncIOMotorClient(MONGO_URI)
-db = client["analytics_db"]
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://mongo:27017")
 
 def get_collection(name):
+    client = AsyncIOMotorClient(MONGO_URI)
+    db = client["analytics_db"]
     return db[name]
